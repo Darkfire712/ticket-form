@@ -1,5 +1,3 @@
-// pages/index.js
-
 import { useState } from 'react';
 
 export default function Home() {
@@ -33,30 +31,30 @@ export default function Home() {
   };
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-gray-100 p-6">
-      <div className="w-full max-w-md rounded-xl bg-white p-8 shadow-lg">
-        <h1 className="mb-6 text-2xl font-bold text-gray-800">Submit a Support Ticket</h1>
-        <form onSubmit={handleSubmit} className="space-y-4">
+    <div className="min-h-screen flex items-center justify-center bg-[#F5F7FA] px-4 py-8">
+      <div className="w-full max-w-lg rounded-2xl bg-white p-8 shadow-xl border border-gray-200">
+        <h1 className="mb-6 text-2xl font-bold text-[#0050C8]">Submit a Support Ticket</h1>
+        <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label className="block text-sm font-medium text-gray-700">Your Name</label>
+            <label className="block text-sm font-semibold text-gray-700 mb-1">Your Name</label>
             <input
               name="name"
               type="text"
               required
               value={formData.name}
               onChange={handleChange}
-              className="mt-1 w-full rounded-md border border-gray-300 px-4 py-2 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200"
+              className="w-full rounded-md border border-gray-300 px-4 py-2 focus:border-[#0050C8] focus:ring-[#0050C8]"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700">Issue Category</label>
+            <label className="block text-sm font-semibold text-gray-700 mb-1">Issue Category</label>
             <select
               name="category"
               required
               value={formData.category}
               onChange={handleChange}
-              className="mt-1 w-full rounded-md border border-gray-300 px-4 py-2 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200"
+              className="w-full rounded-md border border-gray-300 px-4 py-2 focus:border-[#0050C8] focus:ring-[#0050C8]"
             >
               <option value="">Select category</option>
               <option value="Login Issues">Login Issues</option>
@@ -68,20 +66,20 @@ export default function Home() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700">Issue Details</label>
+            <label className="block text-sm font-semibold text-gray-700 mb-1">Issue Details</label>
             <textarea
               name="details"
               required
               rows="5"
               value={formData.details}
               onChange={handleChange}
-              className="mt-1 w-full rounded-md border border-gray-300 px-4 py-2 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200"
+              className="w-full rounded-md border border-gray-300 px-4 py-2 focus:border-[#0050C8] focus:ring-[#0050C8]"
             ></textarea>
           </div>
 
           <button
             type="submit"
-            className="w-full rounded-md bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700"
+            className="w-full rounded-md bg-[#FF671F] px-4 py-2 text-white font-semibold hover:bg-[#e65c1c] transition"
           >
             Submit Ticket
           </button>
@@ -91,7 +89,6 @@ export default function Home() {
           {status === 'error' && <p className="text-sm text-red-600">Failed to submit. Try again.</p>}
         </form>
       </div>
-    </main>
+    </div>
   );
 }
-
