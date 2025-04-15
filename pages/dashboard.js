@@ -1,68 +1,64 @@
-import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
 
-export default function Dashboard() {
+const Dashboard = () => {
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const router = useRouter();
 
+  // Fetch ticket list from the API
   useEffect(() => {
-    async function fetchTickets() {
+    const fetchTickets = async () => {
       try {
         const res = await fetch('/api/tickets');
         const data = await res.json();
-        setTickets(data.tickets);
-      } catch (error) {
-        console.error('Failed to fetch tickets:', error);
+
+        if (res.ok) {
+          setTickets(data.tickets); // Assuming the API returns a list of tickets
+        } else {
+          setError('Failed to load tickets');
+        }
+      } catch (err) {
+        setError('Error fetching tickets');
+        console.error(err);
       } finally {
         setLoading(false);
       }
-    }
+    };
+
     fetchTickets();
   }, []);
 
-  return (
-    <div className="min-h-screen bg-[#F5F7FA] p-6">
-      <div className="max-w-4xl mx-auto">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold text-[#0050C8]">My Tickets</h1>
-          <Link href="/new-ticket">
-            <button className="bg-[#FF671F] text-white px-4 py-2 rounded-md font-semibold hover:bg-[#e65c1c]">
-              + Create Ticket
-            </button>
-          </Link>
-        </div>
+  const handleTicketClick = (id) => {
+    router.push(`/ticket/${id}`); // Redirect to ticket detail page
+  };
 
-        {loading ? (
-          <p className="text-gray-600">Loading tickets...</p>
-        ) : (
-          <div className="bg-white rounded-xl shadow-md overflow-hidden">
-            <table className="w-full table-auto">
-              <thead className="bg-gray-100 text-left">
-                <tr>
-                  <th className="px-4 py-3">Subject</th>
-                  <th className="px-4 py-3">Status</th>
-                  <th className="px-4 py-3">Created</th>
-                  <th className="px-4 py-3">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {tickets.map((ticket) => (
-                  <tr key={ticket.id} className="border-t hover:bg-gray-50">
-                    <td className="px-4 py-3 font-medium">{ticket.subject}</td>
-                    <td className="px-4 py-3 capitalize text-sm text-[#0050C8]">{ticket.status}</td>
-                    <td className="px-4 py-3 text-sm">{new Date(ticket.created_at).toLocaleString()}</td>
-                    <td className="px-4 py-3">
-                      <Link href={`/ticket/${ticket.id}`} className="text-[#FF671F] hover:underline">
-                        View Details
-                      </Link>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
+  if (loading) return <div>Loading tickets...</div>;
+  if (error) return <div>Error: {error}</div>;
+
+  return (
+    <div className="container mx-auto p-4">
+      <h1 className="text-3xl font-semibold mb-4">Dashboard</h1>
+      {tickets.length === 0 ? (
+        <p>No tickets available.</p>
+      ) : (
+        <div className="space-y-4">
+          {tickets.map((ticket) => (
+            <div
+              key={ticket.id}
+              className="ticket p-4 border rounded-md cursor-pointer hover:bg-gray-100"
+              onClick={() => handleTicketClick(ticket.id)}
+            >
+              <h3 className="text-xl font-semibold">{ticket.subject}</h3>
+              <p className="text-sm text-gray-500">Status: {ticket.status}</p>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
-}
+};
+
+export default Dashboard;
+
