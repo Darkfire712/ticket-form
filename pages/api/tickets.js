@@ -1,57 +1,71 @@
-export default async function handler(req, res) {
-  const { id } = req.query;
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
 
-  const subdomain = process.env.ZENDESK_SUBDOMAIN;
-  const email = process.env.ZENDESK_EMAIL;
-  const apiToken = process.env.ZENDESK_API_TOKEN;
+const TicketDetails = () => {
+  const router = useRouter();
+  const { id } = router.query; // Get the ID from the URL
 
-  const auth = Buffer.from(`${email}/token:${apiToken}`).toString('base64');
+  const [ticket, setTicket] = useState(null);
+  const [comments, setComments] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  try {
-    // Fetch ticket details
-    const ticketRes = await fetch(`https://${subdomain}.zendesk.com/api/v2/tickets/${id}.json`, {
-      headers: {
-        Authorization: `Basic ${auth}`,
-        'Content-Type': 'application/json',
-      },
-    });
+  // Ensure the ID exists before making the API request
+  useEffect(() => {
+    if (!id) return; // Exit if `id` is not present yet (router is still loading)
 
-    // Check if the ticket request was successful
-    if (!ticketRes.ok) {
-      const errorText = await ticketRes.text();
-      console.error('Ticket Fetch Error:', errorText);  // Log the detailed error message
-      return res.status(ticketRes.status).json({ message: 'Failed to fetch ticket data', error: errorText });
-    }
+    const fetchTicketData = async () => {
+      try {
+        const res = await fetch(`/api/tickets/${id}`);
+        const data = await res.json();
 
-    const ticketData = await ticketRes.json();
+        if (res.ok) {
+          setTicket(data.ticket);
+          setComments(data.comments);
+        } else {
+          setError('Failed to fetch ticket details');
+        }
+      } catch (err) {
+        setError('Error fetching ticket data');
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    // Fetch ticket comments
-    const commentsRes = await fetch(`https://${subdomain}.zendesk.com/api/v2/tickets/${id}/comments.json`, {
-      headers: {
-        Authorization: `Basic ${auth}`,
-        'Content-Type': 'application/json',
-      },
-    });
+    fetchTicketData(); // Call the function to fetch ticket data
+  }, [id]); // Only run when `id` changes
 
-    // Check if the comments request was successful
-    if (!commentsRes.ok) {
-      const errorText = await commentsRes.text();
-      console.error('Comments Fetch Error:', errorText);  // Log the detailed error message
-      return res.status(commentsRes.status).json({ message: 'Failed to fetch comments', error: errorText });
-    }
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error}</div>;
 
-    const commentsData = await commentsRes.json();
+  return (
+    <div className="container mx-auto p-4">
+      <h1 className="text-3xl font-semibold mb-4">Ticket Details</h1>
+      {ticket && (
+        <div className="ticket-details">
+          <h2 className="text-xl font-bold">{ticket.subject}</h2>
+          <p className="mb-2">{ticket.description}</p>
+          <p className="text-sm text-gray-500">Status: {ticket.status}</p>
+        </div>
+      )}
 
-    const formattedComments = commentsData.comments.map((c) => ({
-      id: c.id,
-      author: c.author_id,
-      body: c.body,
-      created_at: c.created_at,
-    }));
+      <div className="comments mt-6">
+        <h3 className="text-2xl font-semibold mb-2">Comments</h3>
+        {comments.length > 0 ? (
+          comments.map((comment) => (
+            <div key={comment.id} className="comment mb-4 p-4 border rounded-md">
+              <p className="font-medium">{comment.author}</p>
+              <p className="text-sm text-gray-700">{comment.body}</p>
+            </div>
+          ))
+        ) : (
+          <p>No comments yet.</p>
+        )}
+      </div>
+    </div>
+  );
+};
 
-    return res.status(200).json({ ticket: ticketData.ticket, comments: formattedComments });
-  } catch (err) {
-    console.error('Internal Server Error:', err); // Log any other internal errors
-    res.status(500).json({ message: 'Error fetching ticket data', error: err.message });
-  }
-}
+export default TicketDetails;
+
