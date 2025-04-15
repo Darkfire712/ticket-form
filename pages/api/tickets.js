@@ -16,8 +16,11 @@ export default async function handler(req, res) {
       },
     });
 
+    // Check if the ticket request was successful
     if (!ticketRes.ok) {
-      return res.status(ticketRes.status).json({ message: 'Failed to fetch ticket data' });
+      const errorText = await ticketRes.text();
+      console.error('Ticket Fetch Error:', errorText);  // Log the detailed error message
+      return res.status(ticketRes.status).json({ message: 'Failed to fetch ticket data', error: errorText });
     }
 
     const ticketData = await ticketRes.json();
@@ -30,8 +33,11 @@ export default async function handler(req, res) {
       },
     });
 
+    // Check if the comments request was successful
     if (!commentsRes.ok) {
-      return res.status(commentsRes.status).json({ message: 'Failed to fetch comments' });
+      const errorText = await commentsRes.text();
+      console.error('Comments Fetch Error:', errorText);  // Log the detailed error message
+      return res.status(commentsRes.status).json({ message: 'Failed to fetch comments', error: errorText });
     }
 
     const commentsData = await commentsRes.json();
@@ -45,10 +51,7 @@ export default async function handler(req, res) {
 
     return res.status(200).json({ ticket: ticketData.ticket, comments: formattedComments });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Error fetching ticket data' });
+    console.error('Internal Server Error:', err); // Log any other internal errors
+    res.status(500).json({ message: 'Error fetching ticket data', error: err.message });
   }
 }
-
-
-
