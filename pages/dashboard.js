@@ -31,7 +31,7 @@ const Dashboard = () => {
   }, []);
 
   const handleTicketClick = (id) => {
-    router.push(`/ticket/${id}`); // Redirect to ticket detail page
+    router.push(`/dashboard/${id}`); // Redirect to dynamic [id] route for ticket details
   };
 
   if (loading) return <div>Loading tickets...</div>;
@@ -61,4 +61,3 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
-
