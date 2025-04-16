@@ -3,6 +3,10 @@ export default async function handler(req, res) {
   const zendeskEmail = process.env.ZENDESK_EMAIL;
   const zendeskApiToken = process.env.ZENDESK_API_TOKEN;
 
+  if (!zendeskDomain || !zendeskEmail || !zendeskApiToken) {
+    return res.status(500).json({ message: 'Missing environment variables' });
+  }
+
   const auth = Buffer.from(`${zendeskEmail}/token:${zendeskApiToken}`).toString('base64');
 
   try {
@@ -13,13 +17,20 @@ export default async function handler(req, res) {
       },
     });
 
+    const rawText = await response.text();
+
     if (!response.ok) {
-      throw new Error('Failed to fetch tickets');
+      console.error('Zendesk API Error:', rawText); // ✅ Show the real Zendesk error
+      return res.status(response.status).json({
+        message: 'Zendesk API call failed',
+        error: rawText,
+      });
     }
 
-    const data = await response.json();
+    const data = JSON.parse(rawText);
     res.status(200).json({ tickets: data.tickets });
   } catch (err) {
-    res.status(500).json({ message: 'Error fetching tickets', error: err.message });
+    console.error('Server Error:', err);
+    res.status(500).json({ message: 'Internal Server Error', error: err.message });
   }
 }
