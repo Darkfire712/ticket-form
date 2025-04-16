@@ -26,27 +26,31 @@ export default async function handler(req, res) {
       },
     });
 
-    const ticketText = await ticketRes.text();
-    const commentsText = await commentsRes.text();
+    const ticketBody = await ticketRes.text();
+    const commentsBody = await commentsRes.text();
+
+    console.log('🎟️ Ticket Response:', ticketRes.status, ticketBody);
+    console.log('💬 Comments Response:', commentsRes.status, commentsBody);
 
     if (!ticketRes.ok || !commentsRes.ok) {
       return res.status(500).json({
-        message: 'Failed to fetch ticket or comments',
-        error: ticketText || commentsText,
+        message: 'Zendesk API call failed',
+        ticketStatus: ticketRes.status,
+        commentStatus: commentsRes.status,
+        ticketBody,
+        commentsBody,
       });
     }
 
-    const ticketData = JSON.parse(ticketText);
-    const commentsData = JSON.parse(commentsText);
+    const ticketData = JSON.parse(ticketBody);
+    const commentsData = JSON.parse(commentsBody);
 
     res.status(200).json({
       ticket: ticketData.ticket,
       comments: commentsData.comments,
     });
   } catch (error) {
-    console.error('Fetch Ticket Error:', error);
+    console.error('❌ Error fetching ticket:', error);
     res.status(500).json({ message: 'Failed to fetch ticket', error: error.message });
   }
 }
-
-
